@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { CalculatorService } from './calculator.service';
+import { CalculatorService, Layout, Paper, Print, Printer } from './calculator.service';
 
 describe('CalculatorService', () => {
   let service: CalculatorService;
@@ -13,4 +13,5 @@ describe('CalculatorService', () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
+
 });

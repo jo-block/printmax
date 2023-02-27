@@ -1,5 +1,17 @@
 import { Injectable } from '@angular/core';
-import { allSummandTuples, possibleSummand } from './mathHelper';
+import { allSummandTuplesBetweenMinMax, possibleSummand } from './mathHelper';
+import { PrintConfigInput } from './input/input.component';
+
+// vertical
+//
+//   width
+// -------- h
+// |      | e
+// |      | i
+// |      | g
+// |      | h
+// -------- t
+//
 
 export interface Paper {
   width: number,
@@ -21,17 +33,20 @@ export interface Printer {
 }
 
 export interface Layout {
-  horizontalRows: number,
-  horizontalCount: number,
-  verticalRows: number,
-  verticalCount: number,
-  width: number,
-  height: number
+  horizontalColumns: number,
+  horizontalRowCount: number,
+  verticalColumns: number,
+  verticalRowCount: number,
+  print: Print
 }
 
-export interface LayoutRow {
-  paper: Paper,
-  count: number
+export interface PaperLayout {
+  horizontalColumns: number,
+  horizontalRowCount: number,
+  verticalColumns: number,
+  verticalRowCount: number,
+  layout: Layout,
+  paper: Paper
 }
 
 @Injectable({
@@ -39,59 +54,97 @@ export interface LayoutRow {
 })
 export class CalculatorService {
 
-  paper: Paper = {width: 17, height: 19, cost: 4.5};
-  printer: Printer = {costPerPage: 3.5, maxHeight: 10, maxWidth: 10, minHeigth: 5, minWidth: 5};
+  calculateLayout(config: PrintConfigInput): PaperLayout | undefined {
+    // alle möglichen Durck-Breiten auf die ein ganzahliges Vielfaches eines Drucks passt mit aufteilung in horizontale und vertikale Anordnung der Drucke
+    let possibleVerticalHorizontalTuples: {a: number, b: number, sum: number}[] =
+      allSummandTuplesBetweenMinMax(config.print.width, config.print.height, config.printer.maxWidth, config.printer.minWidth);
 
-  print: Print = {width: 4, height: 3};
+    // alle möglichen Druck-Höhen auf die ein ganzahliges Vielfaches eines Drucks passt (ohne Aufteilung in horizontale und vertikale Anordnung, da innherhalb einer Spalte nicht gewechselt wird)
+    let heightOptions: number[] =
+      Array.from(possibleSummand(config.print.width, config.print.height, config.printer.maxHeight, config.printer.minHeigth).values());
 
-  prints = 1000;
+    let possibleLayouts: Layout[] = possibleVerticalHorizontalTuples
+      .flatMap(tuple => heightOptions
+        .map(height => this.calculatePrintLayout(config.print, tuple.a, tuple.b, height)));
 
-  constructor() {
-    this.allOptions()
-  }
-
-  public calculateLayout() {
-
-  }
-
-  private allOptions() {
-    let possibleLayouts = allSummandTuples(this.print.width, this.print.height, this.printer.maxWidth, this.printer.minWidth)
-      .map(e => {
-        this.calculatePossibleLayoutWithCost(e.a, e.b);
-        return {};
-      });
-  }
-
-  private calculatePossibleLayoutWithCost(widthRowCount: number, heightRowCount: number) {
-    let width = widthRowCount * this.print.width + heightRowCount * this.print.height;
-    let heightOptions = possibleSummand(this.print.width, this.print.height, this.printer.maxHeight, this.printer.minHeigth);
-
-    let layoutsWithDifferentHeights: {cost: number, height: number}[] = [];
-
-    heightOptions.forEach(height => {
-      let widthPrintsOnLayout = widthRowCount * Math.floor(height / this.print.height);
-      let heightPrintsOnLayout = heightRowCount * Math.floor(height / this.print.width);
-      let printsOnLayout = widthPrintsOnLayout + heightPrintsOnLayout;
-      let layoutsOnPaperWidth =  Math.floor(this.paper.width / width) * Math.floor(this.paper.height / height);
-      let layoutsOnPaperHeight = Math.floor(this.paper.width / height) * Math.floor(this.paper.height / width);
-      let layoutsOnPaper = layoutsOnPaperWidth > layoutsOnPaperHeight ? layoutsOnPaperWidth : layoutsOnPaperHeight;
-      let printsOnPaper = printsOnLayout * layoutsOnPaper;
-      let cost = Math.ceil(this.prints / printsOnPaper) * (this.paper.cost + (layoutsOnPaper * this.printer.costPerPage));
-
-      layoutsWithDifferentHeights.push({cost, height});
-    });
-
-    let height = layoutsWithDifferentHeights
-      .sort((e1, e2) => e1.cost - e2.cost)
+    let bestLayout = possibleLayouts
+      .map(l => this.calculatePaperLayout(l, config.paper, config.printer))
+      .filter((value): value is PaperLayout => !!value)
+      .sort((l1, l2) => this.calculateCostPerPrint(l1, config.printer) - this.calculateCostPerPrint(l2, config.printer))
       .at(0);
 
-    console.log(width, height)
+    return bestLayout;
   }
 
-  private bestLayoutOnPaper(layoutWidth: number, layoutHeight: number) {
-    let layoutsOnPaperWidth =  Math.floor(this.paper.width / layoutWidth) * Math.floor(this.paper.height / layoutHeight);
-    let layoutsOnPaperHeight = Math.floor(this.paper.width / layoutHeight) * Math.floor(this.paper.height / layoutWidth);
-    let layoutsOnPaper = layoutsOnPaperWidth > layoutsOnPaperHeight ? layoutsOnPaperWidth : layoutsOnPaperHeight;
+  private calculatePrintLayout(print: Print, verticalColumns: number, horizontalColumns: number, height: number): Layout {
+    let verticalRowCount = Math.floor(height / print.height);
+    let horizontalRowCount = Math.floor(height / print.width);
+
+    return {
+      verticalColumns,
+      verticalRowCount,
+      horizontalColumns,
+      horizontalRowCount,
+      print
+    };
+  }
+
+  calculatePaperLayout(layout: Layout, paper: Paper, printer: Printer): PaperLayout | undefined {
+    const layoutWidth = this.widthOf(layout);
+    const layoutHeight = this.heightOf(layout);
+
+    // alle möglichen Druck-Layout Aufteilungen in horizontale und vertikale Anordnung der Layouts auf der Papier Breite
+    const possibleVerticalHorizontalTuples: {a: number, b: number, sum: number}[] =
+      allSummandTuplesBetweenMinMax(layoutWidth, layoutHeight, paper.width, 0);
+
+    const possibleLayouts: PaperLayout[] = possibleVerticalHorizontalTuples.map(tuple => {
+      let verticalRowCount = Math.floor(paper.height / layoutHeight);
+      let horizontalRowCount = Math.floor(paper.height / layoutWidth);
+
+      return {
+        verticalColumns: tuple.a,
+        verticalRowCount,
+        horizontalColumns: tuple.b,
+        horizontalRowCount,
+        layout,
+        paper
+      };
+    })
+
+    const bestLayout = possibleLayouts
+      .sort((l1, l2) => this.calculateCostPerPrint(l1, printer) - this.calculateCostPerPrint(l2, printer))
+      .at(0);
+
+    return bestLayout;
+  }
+
+  calculateCostPerPrint(paperLayout: PaperLayout, printer: Printer) {
+    const layoutsPerPaper = (paperLayout.verticalColumns * paperLayout.verticalRowCount) + (paperLayout.horizontalColumns * paperLayout.horizontalRowCount);
+    const prints = this.printsPerPaper(paperLayout);
+    const cost = +paperLayout.paper.cost + (+printer.costPerPage * layoutsPerPaper);
+
+    return cost / prints;
+  }
+
+  printsPerPaper(paperLayout: PaperLayout): number {
+    const layoutsPerPaper = (paperLayout.verticalColumns * paperLayout.verticalRowCount) + (paperLayout.horizontalColumns * paperLayout.horizontalRowCount);
+    const printsPerLayout = this.printsOf(paperLayout.layout);
+    return layoutsPerPaper * printsPerLayout;
+  }
+
+  public widthOf(layout: Layout): number {
+    return (layout.horizontalColumns * layout.print.height) + (layout.verticalColumns * layout.print.width);
+  }
+
+  public heightOf(layout: Layout): number {
+    const horizontalColumnHeight = layout.horizontalRowCount * layout.print.width;
+    const verticalColumnHeight = layout.verticalRowCount * layout.print.height;
+
+    return horizontalColumnHeight > verticalColumnHeight ? horizontalColumnHeight : verticalColumnHeight;
+  }
+
+  private printsOf(layout: Layout): number {
+    return (layout.verticalColumns * layout.verticalRowCount) + (layout.horizontalColumns * layout.horizontalRowCount);
   }
 
 }

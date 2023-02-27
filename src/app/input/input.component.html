@@ -1,0 +1,142 @@
+<div class="config-container">
+
+  <div class="paper panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">Paper</h3>
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label for="paper-width">Width</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="paper-width"
+                 required
+                 [(ngModel)]="model.paper.width" name="width">
+          <span class="input-group-addon">mm</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="paper-height">Height</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="paper-height"
+                 required
+                 [(ngModel)]="model.paper.height" name="height">
+          <span class="input-group-addon">mm</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="paper-cost">Cost per piece</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="paper-cost"
+                 required
+                 [(ngModel)]="model.paper.cost" name="cost">
+          <span class="input-group-addon">Cent</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="paper panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">Print</h3>
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label for="print-width">Width</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="print-width"
+                 required
+                 [(ngModel)]="model.print.width" name="width">
+          <span class="input-group-addon">mm</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="print-height">Height</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="print-height"
+                 required
+                 [(ngModel)]="model.print.height" name="height">
+          <span class="input-group-addon">mm</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="paper panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">Printer</h3>
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label for="printer-width-min">Minimal width</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="printer-width-min"
+                 required
+                 [(ngModel)]="model.printer.minWidth" name="minWidth">
+          <span class="input-group-addon">mm</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="printer-width-max">Maximum width</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="printer-width-max"
+                 required
+                 [(ngModel)]="model.printer.maxWidth" name="maxWidth">
+          <span class="input-group-addon">mm</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="printer-height-min">Minimum height</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="printer-height-min"
+                 required
+                 [(ngModel)]="model.printer.minHeigth" name="minHeigth">
+          <span class="input-group-addon">mm</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="printer-height-max">Maximum height</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="printer-height-max"
+                 required
+                 [(ngModel)]="model.printer.maxHeight" name="maxHeight">
+          <span class="input-group-addon">mm</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="printer-cost">Cost per print</label>
+        <div class="input-group">
+          <input type="text"
+                 class="form-control"
+                 id="printer-cost"
+                 required
+                 [(ngModel)]="model.printer.costPerPage" name="costPerPage">
+          <span class="input-group-addon">Cent</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="actions">
+  <button class="btn btn-success" (click)="calculate()">Calculate</button>
+</div>
+

@@ -1,6 +1,6 @@
 // todo optimieren
 // sucht alle ganzzahligen Lösungen für min <= a*x+b*y <= max
-export function allSummandTuples(x: number, y: number, max: number, min: number) {
+export function allSummandTuplesBetweenMinMax(x: number, y: number, max: number, min: number): {a: number, b: number, sum: number}[] {
   let possibilities: {a: number, b: number, sum: number}[] = [];
 
   for (let a = 0; a <= max/x; a++) {
@@ -14,7 +14,7 @@ export function allSummandTuples(x: number, y: number, max: number, min: number)
   return possibilities;
 }
 
-export function possibleSummand(x: number, y: number, max: number, min: number) {
+export function possibleSummand(x: number, y: number, max: number, min: number): Set<number> {
   let possibilities = new Set<number>;
 
   for (let a = 0; a <= max/x; a++) {

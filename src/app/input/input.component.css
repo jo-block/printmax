@@ -1,0 +1,12 @@
+.config-container {
+  display: flex;
+}
+
+.paper {
+  width: 200px;
+  margin: 15px;
+}
+
+.actions {
+  padding: 15px;
+}
