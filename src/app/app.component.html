@@ -1,15 +1,18 @@
 <div class="page-header">
   <h1>PrintMax</h1>
 </div>
-<app-input (onCalc)="onCalculation($event)"></app-input>
+<div class="content">
+  <app-input (onCalc)="onCalculation($event)"></app-input>
+  <div style="flex-grow: 10">
+    <canvas
+      #paperCanvas
+      id="paperCanvas"
+      style="border:1px solid #c4c4c4;"
+    ></canvas>
+  </div>
+</div>
 <div class="info">
   <span>Cost per print: ~{{costPerPrint/100 | currency:'EUR':true }}</span>
   <span>Prints per paper: {{printsPerPaper}}</span>
 </div>
-<canvas
-  #paperCanvas
-  id="paperCanvas"
-  width="800"
-  height="800"
-  style="border:1px solid #c4c4c4;"
-></canvas>
+

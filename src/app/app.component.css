@@ -11,3 +11,7 @@ h1 {
   display: flex;
   gap: 20px;
 }
+
+.content {
+  display: flex;
+}
